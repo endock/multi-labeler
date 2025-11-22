@@ -301,10 +301,11 @@ const files = {
   10: [{ filename: 'lib/index.ts' }],
   11: [{ filename: 'app/feature.ts' }, { filename: 'docs/readme.md' }],
   12: [{ filename: 'app/feature.ts' }, { filename: 'app/helpers.ts' }, { filename: 'docs/readme.md' }],
-  13: [{ filename: 'src/index.ts' }, { filename: 'docs/readme.md' }],
-  14: [{ filename: 'lib/a.ts' }, { filename: 'lib/b.ts' }, { filename: 'misc/test.ts' }],
+  13: [{ filename: 'src/index.ts' }],
+  14: [{ filename: 'lib/a.ts' }, { filename: 'lib/b.ts' }],
   15: [],
   16: [{ filename: 'docs/readme.md' }],
+  17: [{ filename: 'src/a.ts' }, { filename: 'src/b.ts' }],
 };
 
 describe('basic', () => {
@@ -420,7 +421,7 @@ describe('complex', () => {
       },
     };
     const labels = await getMatchedLabels(complex);
-    expect(labels).toEqual(['all-app', 'any-app', 'none-app', 'all-any', 'NEQ1', 'L', 'mixed-1']);
+    expect(labels).toEqual(['any-app', 'NEQ1', 'L']);
   });
 
   it('2 should have complex labels', async function () {
@@ -440,7 +441,7 @@ describe('complex', () => {
       },
     };
     const labels = await getMatchedLabels(complex);
-    expect(labels).toEqual(['all-app', 'any-app', 'none-app', 'all-any', 'NEQ1', 'M', 'mixed-1']);
+    expect(labels).toEqual(['any-app', 'NEQ1', 'M']);
   });
 
   it('4 should have complex labels', async function () {
@@ -506,6 +507,14 @@ describe('all matcher behavior', () => {
           },
         },
       },
+      {
+        label: 'no-app',
+        matcher: {
+          files: {
+            all: ['!app/**'],
+          },
+        },
+      },
     ],
   };
 
@@ -522,7 +531,18 @@ describe('all matcher behavior', () => {
     jest.restoreAllMocks();
   });
 
-  it('matches when each glob is satisfied by at least one file', async function () {
+  it('matches only when every file satisfies the glob', async function () {
+    github.context.payload = {
+      pull_request: {
+        number: 17,
+      },
+    };
+
+    const labels = await getMatchedLabels(globsConfig);
+    expect(labels).toEqual(['src-only', 'no-app']);
+  });
+
+  it('does not match when any file falls outside the allowed paths', async function () {
     github.context.payload = {
       pull_request: {
         number: 9,
@@ -530,13 +550,13 @@ describe('all matcher behavior', () => {
     };
 
     const labels = await getMatchedLabels(globsConfig);
-    expect(labels).toEqual(['src-only']);
+    expect(labels).toEqual(['no-app']);
   });
 
-  it('does not match when glob does not match any files', async function () {
+  it('fails negated globs when disallowed files are present', async function () {
     github.context.payload = {
       pull_request: {
-        number: 10,
+        number: 11,
       },
     };
 

@@ -110,14 +110,14 @@ function anyMatch(files: string[], matchers: Minimatch[]): boolean {
 
 /**
  * if globs is empty = matched
- * if globs is not empty, each glob must match at least one file
+ * if globs is not empty, every file must satisfy every glob
  */
 function allMatch(files: string[], matchers: Minimatch[]): boolean {
   if (!matchers.length) {
     return true;
   }
 
-  return matchers.every((matcher) => files.some((file) => matcher.match(file)));
+  return files.every((file) => matchers.every((matcher) => matcher.match(file)));
 }
 
 function matchedFiles(files: string[], matchers: Minimatch[]): string[] {
