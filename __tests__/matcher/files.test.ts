@@ -297,6 +297,15 @@ const files = {
     },
   ],
   8: [{ filename: 'app/1.js' }, { filename: 'app/2.js' }, { filename: 'app/3.js' }],
+  9: [{ filename: 'src/index.ts' }, { filename: 'docs/readme.md' }],
+  10: [{ filename: 'lib/index.ts' }],
+  11: [{ filename: 'app/feature.ts' }, { filename: 'docs/readme.md' }],
+  12: [{ filename: 'app/feature.ts' }, { filename: 'app/helpers.ts' }, { filename: 'docs/readme.md' }],
+  13: [{ filename: 'src/index.ts' }],
+  14: [{ filename: 'lib/a.ts' }, { filename: 'lib/b.ts' }],
+  15: [],
+  16: [{ filename: 'docs/readme.md' }],
+  17: [{ filename: 'src/a.ts' }, { filename: 'src/b.ts' }],
 };
 
 describe('basic', () => {
@@ -483,5 +492,236 @@ describe('complex', () => {
     };
     const labels = await getMatchedLabels(complex);
     expect(labels).toEqual(['all-app', 'any-app', 'NEQ1', 'M', 'mixed-1']);
+  });
+});
+
+describe('all matcher behavior', () => {
+  const globsConfig: Config = {
+    version: 'v1',
+    labels: [
+      {
+        label: 'src-only',
+        matcher: {
+          files: {
+            all: ['src/**'],
+          },
+        },
+      },
+      {
+        label: 'no-app',
+        matcher: {
+          files: {
+            all: ['!app/**'],
+          },
+        },
+      },
+    ],
+  };
+
+  beforeEach(() => {
+    jest.spyOn(github.context, 'repo', 'get').mockImplementation(() => {
+      return {
+        owner: 'owner-name',
+        repo: 'repo-name',
+      };
+    });
+  });
+
+  afterAll(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('matches only when every file satisfies the glob', async function () {
+    github.context.payload = {
+      pull_request: {
+        number: 17,
+      },
+    };
+
+    const labels = await getMatchedLabels(globsConfig);
+    expect(labels).toEqual(['src-only', 'no-app']);
+  });
+
+  it('does not match when any file falls outside the allowed paths', async function () {
+    github.context.payload = {
+      pull_request: {
+        number: 9,
+      },
+    };
+
+    const labels = await getMatchedLabels(globsConfig);
+    expect(labels).toEqual(['no-app']);
+  });
+
+  it('fails negated globs when disallowed files are present', async function () {
+    github.context.payload = {
+      pull_request: {
+        number: 11,
+      },
+    };
+
+    const labels = await getMatchedLabels(globsConfig);
+    expect(labels).toEqual([]);
+  });
+});
+
+describe('count matcher scoping', () => {
+  const scopedCountConfig: Config = {
+    version: 'v1',
+    labels: [
+      {
+        label: 'app-lte-1',
+        matcher: {
+          files: {
+            any: ['app/**'],
+            count: { lte: 1 },
+          },
+        },
+      },
+      {
+        label: 'app-eq-1',
+        matcher: {
+          files: {
+            any: ['app/**'],
+            count: { eq: 1 },
+          },
+        },
+      },
+      {
+        label: 'src-eq-1',
+        matcher: {
+          files: {
+            all: ['src/**'],
+            count: { eq: 1 },
+          },
+        },
+      },
+      {
+        label: 'lib-eq-2',
+        matcher: {
+          files: {
+            any: ['lib/**'],
+            all: ['lib/**'],
+            count: { eq: 2 },
+          },
+        },
+      },
+    ],
+  };
+
+  beforeEach(() => {
+    jest.spyOn(github.context, 'repo', 'get').mockImplementation(() => {
+      return {
+        owner: 'owner-name',
+        repo: 'repo-name',
+      };
+    });
+  });
+
+  afterAll(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('counts only files matching the any globs', async function () {
+    github.context.payload = {
+      pull_request: {
+        number: 11,
+      },
+    };
+
+    const labels = await getMatchedLabels(scopedCountConfig);
+    expect(labels).toEqual(['app-lte-1', 'app-eq-1']);
+  });
+
+  it('ignores unrelated files when evaluating counts', async function () {
+    github.context.payload = {
+      pull_request: {
+        number: 12,
+      },
+    };
+
+    const labels = await getMatchedLabels(scopedCountConfig);
+    expect(labels).toEqual([]);
+  });
+
+  it('uses files matching all globs for counts', async function () {
+    github.context.payload = {
+      pull_request: {
+        number: 13,
+      },
+    };
+
+    const labels = await getMatchedLabels(scopedCountConfig);
+    expect(labels).toEqual(['src-eq-1']);
+  });
+
+  it('reuses glob-matched files for count checks', async function () {
+    github.context.payload = {
+      pull_request: {
+        number: 14,
+      },
+    };
+
+    const labels = await getMatchedLabels(scopedCountConfig);
+    expect(labels).toEqual(['lib-eq-2']);
+  });
+});
+
+describe('zero count handling', () => {
+  const zeroCountConfig: Config = {
+    version: 'v1',
+    labels: [
+      {
+        label: 'no-files-eq',
+        matcher: {
+          files: {
+            count: { eq: 0 },
+          },
+        },
+      },
+      {
+        label: 'no-files-lte',
+        matcher: {
+          files: {
+            count: { lte: 0 },
+          },
+        },
+      },
+    ],
+  };
+
+  beforeEach(() => {
+    jest.spyOn(github.context, 'repo', 'get').mockImplementation(() => {
+      return {
+        owner: 'owner-name',
+        repo: 'repo-name',
+      };
+    });
+  });
+
+  afterAll(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('applies labels when no files are present', async function () {
+    github.context.payload = {
+      pull_request: {
+        number: 15,
+      },
+    };
+
+    const labels = await getMatchedLabels(zeroCountConfig);
+    expect(labels).toEqual(['no-files-eq', 'no-files-lte']);
+  });
+
+  it('does not apply labels when files exceed zero thresholds', async function () {
+    github.context.payload = {
+      pull_request: {
+        number: 16,
+      },
+    };
+
+    const labels = await getMatchedLabels(zeroCountConfig);
+    expect(labels).toEqual([]);
   });
 });

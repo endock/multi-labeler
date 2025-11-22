@@ -67,9 +67,9 @@ async function addChecks(checks: StatusCheck[]): Promise<void> {
   }
 
   const sha = github.context.payload.pull_request?.head.sha as string;
-  await Promise.all([
+  await Promise.all(
     checks.map((check) => {
-      client.rest.repos.createCommitStatus({
+      return client.rest.repos.createCommitStatus({
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,
         sha: sha,
@@ -79,13 +79,15 @@ async function addChecks(checks: StatusCheck[]): Promise<void> {
         target_url: check.url,
       });
     }),
-  ]);
+  );
 }
 
 getConfig(client, configPath, configRepo)
   .then(async (config) => {
     const labeled = await labels(client, config);
     const finalLabels = mergeLabels(labeled, config);
+
+    core.info(`Matched labels: ${finalLabels.join(', ') || 'None'}`);
 
     return Promise.all([
       addLabels(finalLabels),

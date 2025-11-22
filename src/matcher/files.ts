@@ -63,7 +63,11 @@ function getMatchers(config: Config): FileMatcher[] {
       };
     })
     .filter(({ any, all, count }) => {
-      return any.length || all.length || count?.lte || count?.gte || count?.eq || count?.neq;
+      const hasCount =
+        count !== undefined &&
+        (count.lte !== undefined || count.gte !== undefined || count.eq !== undefined || count.neq !== undefined);
+
+      return any.length || all.length || hasCount;
     });
 }
 
@@ -84,12 +88,14 @@ async function getFiles(client: InstanceType<typeof GitHub>, pr_number: number):
  * if globs is empty = matched
  * if globs is not empty, any files must match
  */
-function anyMatch(files: string[], globs: string[]): boolean {
-  if (!globs.length) {
+function toMatchers(globs: string[]): Minimatch[] {
+  return globs.map((g) => new Minimatch(g));
+}
+
+function anyMatch(files: string[], matchers: Minimatch[]): boolean {
+  if (!matchers.length) {
     return true;
   }
-
-  const matchers = globs.map((g) => new Minimatch(g));
 
   for (const matcher of matchers) {
     for (const file of files) {
@@ -104,20 +110,22 @@ function anyMatch(files: string[], globs: string[]): boolean {
 
 /**
  * if globs is empty = matched
- * if globs is not empty, all files must match
+ * if globs is not empty, every file must satisfy every glob
  */
-function allMatch(files: string[], globs: string[]): boolean {
-  const matchers = globs.map((g) => new Minimatch(g));
-
-  for (const matcher of matchers) {
-    for (const file of files) {
-      if (!matcher.match(file)) {
-        return false;
-      }
-    }
+function allMatch(files: string[], matchers: Minimatch[]): boolean {
+  if (!matchers.length) {
+    return true;
   }
 
-  return true;
+  return files.every((file) => matchers.every((matcher) => matcher.match(file)));
+}
+
+function matchedFiles(files: string[], matchers: Minimatch[]): string[] {
+  if (!matchers.length) {
+    return [];
+  }
+
+  return files.filter((file) => matchers.some((matcher) => matcher.match(file)));
 }
 
 /**
@@ -155,7 +163,23 @@ export default async function match(client: InstanceType<typeof GitHub>, config:
 
   return matchers
     .filter((matcher) => {
-      return allMatch(files, matcher.all) && anyMatch(files, matcher.any) && countMatch(files, matcher.count);
+      const anyMatchers = toMatchers(matcher.any);
+      const allMatchers = toMatchers(matcher.all);
+
+      if (!allMatch(files, allMatchers) || !anyMatch(files, anyMatchers)) {
+        return false;
+      }
+
+      const scopedFiles = (() => {
+        if (!anyMatchers.length && !allMatchers.length) {
+          return files;
+        }
+
+        const matched = new Set([...matchedFiles(files, anyMatchers), ...matchedFiles(files, allMatchers)]);
+        return files.filter((file) => matched.has(file));
+      })();
+
+      return countMatch(scopedFiles, matcher.count);
     })
     .map((value) => value.label);
 }
