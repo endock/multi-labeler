@@ -2,6 +2,8 @@ import * as yaml from 'js-yaml';
 import * as t from 'io-ts';
 import reporter from 'io-ts-reporters';
 import { isRight } from 'fp-ts/Either';
+import { composeConfigGet } from '@probot/octokit-plugin-config';
+import type { Octokit as ProbotOctokit } from '@octokit/core';
 import { GitHub } from '@actions/github/lib/utils';
 import * as github from '@actions/github';
 
@@ -94,8 +96,7 @@ export async function getConfig(
   const repoName = configRepo?.trim() ? configRepo : `${github.context.repo.owner}/${github.context.repo.repo}`;
   const [owner, repo] = repoName.split('/');
 
-  const { composeConfigGet } = await import('@probot/octokit-plugin-config');
-  const response = await composeConfigGet(client as any, {
+  const response = await composeConfigGet(client as unknown as ProbotOctokit, {
     owner,
     repo,
     path: configPath,
