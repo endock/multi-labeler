@@ -7,16 +7,21 @@ module.exports = [
       globals: {
         module: false,
         require: false,
+        console: false,
       },
     },
   },
   require('@eslint/js').configs.recommended,
   {
-    files: ['**/*.{ts}'],
+    files: ['**/*.ts'],
     plugins: {
       '@typescript-eslint': require('@typescript-eslint/eslint-plugin'),
     },
-    rules: require('@typescript-eslint/eslint-plugin').configs.recommended.rules,
+    rules: {
+      ...require('@typescript-eslint/eslint-plugin').configs.recommended.rules,
+      // io-ts declares a const and a type of the same name on purpose, tsc catches real redeclarations
+      'no-redeclare': 'off',
+    },
     languageOptions: {
       parser: require('@typescript-eslint/parser'),
     },

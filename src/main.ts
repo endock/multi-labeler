@@ -1,8 +1,9 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import { labels, mergeLabels } from './labeler';
-import { Config, getConfig } from './config';
+
 import { checks, StatusCheck } from './checks';
+import { Config, getConfig } from './config';
+import { labels, mergeLabels } from './labeler';
 
 const githubToken = core.getInput('github-token');
 const configPath = core.getInput('config-path', { required: true });
@@ -50,9 +51,7 @@ async function removeLabels(labels: string[], config: Config): Promise<unknown[]
             issue_number: payload!.number,
             name: label.label,
           })
-          .catch((ignored) => {
-            return undefined;
-          });
+          .catch(() => undefined);
       }),
   );
 }

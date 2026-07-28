@@ -1,6 +1,7 @@
-import { GitHub } from '@actions/github/lib/utils';
-import { Check, Config } from './config';
 import * as github from '@actions/github';
+import { GitHub } from '@actions/github/lib/utils';
+
+import { Check, Config } from './config';
 
 export interface StatusCheck {
   context: string;

@@ -1,13 +1,13 @@
-import * as yaml from 'js-yaml';
+import * as github from '@actions/github';
+import { GitHub } from '@actions/github/lib/utils';
+import type { Octokit as ProbotOctokit } from '@octokit/core';
+import { composeConfigGet } from '@probot/octokit-plugin-config';
+import type { Configuration } from '@probot/octokit-plugin-config/dist-types/types';
+import { all } from 'deepmerge';
+import { isRight } from 'fp-ts/Either';
 import * as t from 'io-ts';
 import reporter from 'io-ts-reporters';
-import { isRight } from 'fp-ts/Either';
-import { composeConfigGet } from '@probot/octokit-plugin-config';
-import { Configuration } from '@probot/octokit-plugin-config/dist-types/types';
-import type { Octokit as ProbotOctokit } from '@octokit/core';
-import { GitHub } from '@actions/github/lib/utils';
-import * as github from '@actions/github';
-import { all } from 'deepmerge';
+import * as yaml from 'js-yaml';
 
 const Matcher = t.partial({
   title: t.string,

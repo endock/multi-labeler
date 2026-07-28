@@ -1,6 +1,7 @@
-import { Config, Label } from '../config';
-import { GitHub } from '@actions/github/lib/utils';
 import * as github from '@actions/github';
+import { GitHub } from '@actions/github/lib/utils';
+
+import { Config, Label } from '../config';
 
 function getAuthors(label: Label): string[] {
   const author = label.matcher?.author;

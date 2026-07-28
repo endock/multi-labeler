@@ -1,16 +1,16 @@
+import * as github from '@actions/github';
 import { GitHub } from '@actions/github/lib/utils';
-import { Config, Except, Label } from './config';
+import { concat, difference, omit, uniq } from 'lodash';
 
-import { uniq, concat, difference, omit } from 'lodash';
-import title from './matcher/title';
-import body from './matcher/body';
-import comment from './matcher/comment';
-import branch from './matcher/branch';
+import { Config, Except, Label } from './config';
+import author from './matcher/author';
 import baseBranch from './matcher/base-branch';
+import body from './matcher/body';
+import branch from './matcher/branch';
+import comment from './matcher/comment';
 import commits from './matcher/commits';
 import files from './matcher/files';
-import author from './matcher/author';
-import * as github from '@actions/github';
+import title from './matcher/title';
 
 /**
  * @param {string[]} labels that are newly derived

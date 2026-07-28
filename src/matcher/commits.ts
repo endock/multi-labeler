@@ -1,6 +1,7 @@
-import { Config } from '../config';
-import { GitHub } from '@actions/github/lib/utils';
 import * as github from '@actions/github';
+import { GitHub } from '@actions/github/lib/utils';
+
+import { Config } from '../config';
 import { matcherRegexAny } from './utils';
 
 export default async function match(client: InstanceType<typeof GitHub>, config: Config): Promise<string[]> {
@@ -26,7 +27,6 @@ export default async function match(client: InstanceType<typeof GitHub>, config:
     }),
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const messages: string[] = responses.map((c: any) => c.commit.message);
 
   return matchers

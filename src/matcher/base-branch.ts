@@ -1,6 +1,7 @@
-import { Config } from '../config';
-import { GitHub } from '@actions/github/lib/utils';
 import * as github from '@actions/github';
+import { GitHub } from '@actions/github/lib/utils';
+
+import { Config } from '../config';
 import { matcherRegex } from './utils';
 
 export default function match(client: InstanceType<typeof GitHub>, config: Config): string[] {

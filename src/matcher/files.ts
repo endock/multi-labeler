@@ -1,7 +1,8 @@
-import { Config } from '../config';
-import { GitHub } from '@actions/github/lib/utils';
 import * as github from '@actions/github';
+import { GitHub } from '@actions/github/lib/utils';
 import { Minimatch } from 'minimatch';
+
+import { Config } from '../config';
 
 /**
  * Type-safe FileMatcher for convenience.
@@ -80,7 +81,6 @@ async function getFiles(client: InstanceType<typeof GitHub>, pr_number: number):
     }),
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return responses.map((c: any) => c.filename);
 }
 

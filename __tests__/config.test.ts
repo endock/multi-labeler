@@ -8,31 +8,31 @@ function parseConfig(path: string): Config {
 
 describe('valid config', () => {
   it('basic.yml', function () {
-    expect(() => parseConfig('basic.yml')).not.toThrowError();
+    expect(() => parseConfig('basic.yml')).not.toThrow();
   });
 
   it('checks.yml', function () {
-    expect(() => parseConfig('checks.yml')).not.toThrowError();
+    expect(() => parseConfig('checks.yml')).not.toThrow();
   });
 
   it('checks-basic.yml', function () {
-    expect(() => parseConfig('checks-basic.yml')).not.toThrowError();
+    expect(() => parseConfig('checks-basic.yml')).not.toThrow();
   });
 
   it('empty.yml', function () {
-    expect(() => parseConfig('empty.yml')).not.toThrowError();
+    expect(() => parseConfig('empty.yml')).not.toThrow();
   });
 
   it('except.yml', function () {
-    expect(() => parseConfig('except.yml')).not.toThrowError();
+    expect(() => parseConfig('except.yml')).not.toThrow();
   });
 
   it('labels.yml', function () {
-    expect(() => parseConfig('labels.yml')).not.toThrowError();
+    expect(() => parseConfig('labels.yml')).not.toThrow();
   });
 
   it('semantic-release.yml', function () {
-    expect(() => parseConfig('semantic-release.yml')).not.toThrowError();
+    expect(() => parseConfig('semantic-release.yml')).not.toThrow();
   });
 });
 
