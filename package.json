@@ -18,7 +18,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@actions/core": "^2.0.3",
+    "@actions/core": "^3.0.1",
     "@actions/github": "^7.0.0",
     "@octokit/core": "^5.2.2",
     "@probot/octokit-plugin-config": "^2.0.1",
