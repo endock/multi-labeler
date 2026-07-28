@@ -1,7 +1,7 @@
 import { GitHub } from '@actions/github/lib/utils';
-import { Config } from './config';
+import { Config, Except, Label } from './config';
 
-import { uniq, concat, difference } from 'lodash';
+import { uniq, concat, difference, omit } from 'lodash';
 import title from './matcher/title';
 import body from './matcher/body';
 import comment from './matcher/comment';
@@ -32,11 +32,51 @@ export function mergeLabels(labels: string[], config: Config): string[] {
   return difference(uniq(concat(labels, currents)), removals);
 }
 
-export async function labels(client: InstanceType<typeof GitHub>, config: Config): Promise<string[]> {
-  if (!config.labels?.length) {
+function exceptLabels(except: Label['except']): string[] {
+  if (!except) {
     return [];
   }
 
+  return Array.isArray(except) ? except : except.labels || [];
+}
+
+/**
+ * @param {string[]} labels that matched
+ * @param {string[]} excepted labels whose except matcher matched
+ * @param {Config} config of the labels
+ */
+export function excludeLabels(labels: string[], excepted: string[], config: Config): string[] {
+  const matched = new Set(labels);
+  const dropped = new Set(excepted);
+
+  // except.labels looks at the matched set only, so two labels excluding each other cancel out.
+  return labels.filter((label) => {
+    if (dropped.has(label)) {
+      return false;
+    }
+
+    return !(config.labels || [])
+      .filter((value) => value.label === label)
+      .flatMap((value) => exceptLabels(value.except))
+      .some((other) => matched.has(other));
+  });
+}
+
+/**
+ * Config view where each except takes the place of its matcher, so the matchers can run against it unchanged.
+ */
+function exceptConfig(config: Config): Config {
+  return {
+    ...config,
+    labels: (config.labels || [])
+      .filter((value) => value.except && !Array.isArray(value.except))
+      .map((value) => {
+        return { label: value.label, matcher: omit(value.except as Except, 'labels') };
+      }),
+  };
+}
+
+async function match(client: InstanceType<typeof GitHub>, config: Config): Promise<string[]> {
   const labels = await Promise.all([
     title(client, config),
     body(client, config),
@@ -46,9 +86,17 @@ export async function labels(client: InstanceType<typeof GitHub>, config: Config
     commits(client, config),
     files(client, config),
     author(client, config),
-  ]).then((value) => {
-    return uniq(concat(...value));
-  });
+  ]);
 
-  return mergeLabels(labels, config);
+  return uniq(concat(...labels));
+}
+
+export async function labels(client: InstanceType<typeof GitHub>, config: Config): Promise<string[]> {
+  if (!config.labels?.length) {
+    return [];
+  }
+
+  const [matched, excepted] = await Promise.all([match(client, config), match(client, exceptConfig(config))]);
+
+  return mergeLabels(excludeLabels(matched, excepted, config), config);
 }

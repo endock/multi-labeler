@@ -1,0 +1,20 @@
+version: v1
+
+labels:
+  - label: 'v3'
+    except: ['v2']
+    matcher:
+      baseBranch: '/^main$/'
+      body: '/(v3)/i'
+
+  - label: 'v2'
+    matcher:
+      baseBranch: '/^v2$/'
+
+  - label: 'feat'
+    except:
+      labels: ['v2']
+      title: '/wip/i'
+      branch: '/^experiment\//'
+    matcher:
+      title: '/^feat:/'

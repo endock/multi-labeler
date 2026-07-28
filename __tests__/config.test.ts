@@ -23,6 +23,10 @@ describe('valid config', () => {
     expect(() => parseConfig('empty.yml')).not.toThrowError();
   });
 
+  it('except.yml', function () {
+    expect(() => parseConfig('except.yml')).not.toThrowError();
+  });
+
   it('labels.yml', function () {
     expect(() => parseConfig('labels.yml')).not.toThrowError();
   });
@@ -59,6 +63,10 @@ describe('invalid checks', () => {
 });
 
 describe('invalid labels', () => {
+  it('except-invalid.yml', function () {
+    expect(() => parseConfig('invalid/except-invalid.yml')).toThrow(/labeler\.yml parse error:/);
+  });
+
   it('labels-empty.yml', function () {
     expect(() => parseConfig('invalid/labels-empty.yml')).toThrow(/labeler\.yml parse error:/);
   });

@@ -9,6 +9,7 @@ Optionally, generate a status check based on the labels.
 - Append based multi-labeler, using `.github/labeler.yml` as config.
 - Automatically fail if `labeler.yml` is malformed, type-checked.
 - Set label to sync for conditional labeling, removed if condition failed.
+- Set except to skip a label when another label or one of the same matchers hit.
 - Regex Matcher:
   - PR/Issue title
   - PR/Issue body
@@ -79,6 +80,12 @@ version: v1
 labels:
   - label: 'feat'
     sync: true # remove label if match failed, default: false (pull_request/issue only)
+    # Skip this label if any of the except conditions hit, default: none.
+    # Takes the same 8 matchers as below, plus labels. Shorthand for labels only: except: ['fix']
+    except:
+      labels: ['fix']
+      title: '^wip:.*'
+      branch: '^experiment/.*'
     matcher:
       # Matcher will match on any 8 matchers
       title: '^feat:.*'
