@@ -97,8 +97,8 @@ Thumbs.db
 # Ignore built ts files
 __tests__/runner/*
 lib/**/*
-dist/**/*
-dist
+
+# dist/ is the shipped action bundle - tracked on purpose, CI enforces it stays in sync
 
 # IntelliJ
 .idea
