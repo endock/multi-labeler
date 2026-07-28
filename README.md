@@ -530,6 +530,7 @@ checks:
    3. Chain this action with another action; this should just be for (labels only).
 
 <!-- skip-docs -->
+
 ## ☕ Supporters
 
 Fiber is an open-source project that runs on donations to pay the bills, e.g., our domain name, hosting, and serverless infrastructure. If you want to support Fiber, please become a [GitHub Sponsor](https://github.com/sponsors/gofiber).
