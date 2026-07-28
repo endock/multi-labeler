@@ -154,6 +154,87 @@ describe('labeler', () => {
       expect(labels).toEqual(['docs']);
     });
   });
+
+  describe('except.yml', () => {
+    it('should drop v3 when v2 matched', async function () {
+      github.context.payload = {
+        pull_request: {
+          number: 1,
+          body: 'backport of the v3 fix',
+          base: { ref: 'v2' },
+        },
+      };
+
+      const labels = await runLabels('__tests__/fixtures/except.yml');
+      expect(labels).toEqual(['v2']);
+    });
+
+    it('should keep v3 when v2 did not match', async function () {
+      github.context.payload = {
+        pull_request: {
+          number: 1,
+          body: 'fixes a v3 bug',
+          base: { ref: 'main' },
+        },
+      };
+
+      const labels = await runLabels('__tests__/fixtures/except.yml');
+      expect(labels).toEqual(['v3']);
+    });
+
+    it('should keep feat', async function () {
+      github.context.payload = {
+        pull_request: {
+          number: 1,
+          title: 'feat: spaceship',
+          head: { ref: 'feat/spaceship' },
+        },
+      };
+
+      const labels = await runLabels('__tests__/fixtures/except.yml');
+      expect(labels).toEqual(['feat']);
+    });
+
+    it('should drop feat on except title', async function () {
+      github.context.payload = {
+        pull_request: {
+          number: 1,
+          title: 'feat: wip spaceship',
+          head: { ref: 'feat/spaceship' },
+        },
+      };
+
+      const labels = await runLabels('__tests__/fixtures/except.yml');
+      expect(labels).toEqual([]);
+    });
+
+    it('should drop feat on except branch', async function () {
+      github.context.payload = {
+        pull_request: {
+          number: 1,
+          title: 'feat: spaceship',
+          head: { ref: 'experiment/spaceship' },
+        },
+      };
+
+      const labels = await runLabels('__tests__/fixtures/except.yml');
+      expect(labels).toEqual([]);
+    });
+
+    it('should drop feat on except label', async function () {
+      github.context.payload = {
+        pull_request: {
+          number: 1,
+          title: 'feat: spaceship',
+          head: { ref: 'feat/spaceship' },
+          base: { ref: 'v2' },
+        },
+      };
+
+      const labels = await runLabels('__tests__/fixtures/except.yml');
+      expect(labels).toEqual(['v2']);
+    });
+  });
 });
 
 describe('mergeLabels, empty config', () => {

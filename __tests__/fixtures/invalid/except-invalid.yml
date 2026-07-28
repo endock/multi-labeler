@@ -1,0 +1,5 @@
+version: v1
+
+labels:
+  - label: 'except'
+    except: 'not-a-list'

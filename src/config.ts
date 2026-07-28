@@ -33,12 +33,21 @@ const Matcher = t.partial({
   ]),
 });
 
+// Same matchers as Matcher, plus labels that were matched by another entry.
+const Except = t.intersection([
+  Matcher,
+  t.partial({
+    labels: t.array(t.string),
+  }),
+]);
+
 const Label = t.intersection([
   t.type({
     label: t.string,
   }),
   t.partial({
     sync: t.boolean,
+    except: t.union([t.array(t.string), Except]),
     matcher: Matcher,
   }),
 ]);
@@ -75,6 +84,7 @@ const Config = t.intersection([
 ]);
 
 export type Matcher = t.TypeOf<typeof Matcher>;
+export type Except = t.TypeOf<typeof Except>;
 export type Label = t.TypeOf<typeof Label>;
 export type Check = t.TypeOf<typeof Check>;
 export type Config = t.TypeOf<typeof Config>;

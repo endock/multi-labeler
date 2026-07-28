@@ -165,12 +165,20 @@ const Matcher = t.partial({
         }),
     ]),
 });
+// Same matchers as Matcher, plus labels that were matched by another entry.
+const Except = t.intersection([
+    Matcher,
+    t.partial({
+        labels: t.array(t.string),
+    }),
+]);
 const Label = t.intersection([
     t.type({
         label: t.string,
     }),
     t.partial({
         sync: t.boolean,
+        except: t.union([t.array(t.string), Except]),
         matcher: Matcher,
     }),
 ]);
@@ -272,6 +280,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.mergeLabels = mergeLabels;
+exports.excludeLabels = excludeLabels;
 exports.labels = labels;
 const lodash_1 = __nccwpck_require__(2356);
 const title_1 = __importDefault(__nccwpck_require__(4951));
@@ -299,10 +308,45 @@ function mergeLabels(labels, config) {
         .map((value) => value.label);
     return (0, lodash_1.difference)((0, lodash_1.uniq)((0, lodash_1.concat)(labels, currents)), removals);
 }
-async function labels(client, config) {
-    if (!config.labels?.length) {
+function exceptLabels(except) {
+    if (!except) {
         return [];
     }
+    return Array.isArray(except) ? except : except.labels || [];
+}
+/**
+ * @param {string[]} labels that matched
+ * @param {string[]} excepted labels whose except matcher matched
+ * @param {Config} config of the labels
+ */
+function excludeLabels(labels, excepted, config) {
+    const matched = new Set(labels);
+    const dropped = new Set(excepted);
+    // except.labels looks at the matched set only, so two labels excluding each other cancel out.
+    return labels.filter((label) => {
+        if (dropped.has(label)) {
+            return false;
+        }
+        return !(config.labels || [])
+            .filter((value) => value.label === label)
+            .flatMap((value) => exceptLabels(value.except))
+            .some((other) => matched.has(other));
+    });
+}
+/**
+ * Config view where each except takes the place of its matcher, so the matchers can run against it unchanged.
+ */
+function exceptConfig(config) {
+    return {
+        ...config,
+        labels: (config.labels || [])
+            .filter((value) => value.except && !Array.isArray(value.except))
+            .map((value) => {
+            return { label: value.label, matcher: (0, lodash_1.omit)(value.except, 'labels') };
+        }),
+    };
+}
+async function match(client, config) {
     const labels = await Promise.all([
         (0, title_1.default)(client, config),
         (0, body_1.default)(client, config),
@@ -312,10 +356,15 @@ async function labels(client, config) {
         (0, commits_1.default)(client, config),
         (0, files_1.default)(client, config),
         (0, author_1.default)(client, config),
-    ]).then((value) => {
-        return (0, lodash_1.uniq)((0, lodash_1.concat)(...value));
-    });
-    return mergeLabels(labels, config);
+    ]);
+    return (0, lodash_1.uniq)((0, lodash_1.concat)(...labels));
+}
+async function labels(client, config) {
+    if (!config.labels?.length) {
+        return [];
+    }
+    const [matched, excepted] = await Promise.all([match(client, config), match(client, exceptConfig(config))]);
+    return mergeLabels(excludeLabels(matched, excepted, config), config);
 }
 
 
