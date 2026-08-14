@@ -12,3 +12,8 @@ updates:
       interval: 'daily'
     labels:
       - '🤖 Dependencies'
+    ignore:
+      # @actions/core 3 is ESM-only and ncc has no ESM output, so the bundle
+      # cannot be built at all. Lift this together with the move off ncc.
+      - dependency-name: '@actions/core'
+        update-types: ['version-update:semver-major']
