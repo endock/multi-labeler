@@ -1,47 +1,48 @@
-module.exports = [
+import js from '@eslint/js';
+import tsPlugin from '@typescript-eslint/eslint-plugin';
+import tsParser from '@typescript-eslint/parser';
+import prettier from 'eslint-config-prettier';
+import importX from 'eslint-plugin-import-x';
+import noOnlyTests from 'eslint-plugin-no-only-tests';
+import simpleImportSort from 'eslint-plugin-simple-import-sort';
+
+export default [
   {
     ignores: ['dist/**', 'lib/**', 'node_modules/**'],
   },
-  {
-    languageOptions: {
-      globals: {
-        module: false,
-        require: false,
-        console: false,
-      },
-    },
-  },
-  require('@eslint/js').configs.recommended,
+  js.configs.recommended,
   {
     files: ['**/*.ts'],
     plugins: {
-      '@typescript-eslint': require('@typescript-eslint/eslint-plugin'),
+      '@typescript-eslint': tsPlugin,
     },
     rules: {
-      ...require('@typescript-eslint/eslint-plugin').configs.recommended.rules,
+      ...tsPlugin.configs.recommended.rules,
       // io-ts declares a const and a type of the same name on purpose, tsc catches real redeclarations
       'no-redeclare': 'off',
+      // tsc resolves identifiers, eslint would only guess at globals and ambient types
+      'no-undef': 'off',
     },
     languageOptions: {
-      parser: require('@typescript-eslint/parser'),
+      parser: tsParser,
     },
   },
   {
     plugins: {
-      'simple-import-sort': require('eslint-plugin-simple-import-sort'),
-      import: require('eslint-plugin-import'),
+      'simple-import-sort': simpleImportSort,
+      'import-x': importX,
     },
     rules: {
       'simple-import-sort/imports': 'error',
       'simple-import-sort/exports': 'error',
-      'import/first': 'error',
-      'import/newline-after-import': 'error',
-      'import/no-duplicates': 'error',
+      'import-x/first': 'error',
+      'import-x/newline-after-import': 'error',
+      'import-x/no-duplicates': 'error',
     },
   },
   {
     plugins: {
-      'no-only-tests': require('eslint-plugin-no-only-tests'),
+      'no-only-tests': noOnlyTests,
     },
     rules: {
       'no-only-tests/no-only-tests': 'error',
@@ -52,5 +53,5 @@ module.exports = [
       '@typescript-eslint/no-explicit-any': 'off',
     },
   },
-  require('eslint-config-prettier'),
+  prettier,
 ];

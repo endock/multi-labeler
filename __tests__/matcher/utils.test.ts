@@ -25,7 +25,7 @@ it('uses slash-delimited regex for matcherRegexAny', function () {
 });
 
 it('logs invalid slash-delimited regex and still matches via fallback', function () {
-  const errorMock = jest.spyOn(console, 'error').mockImplementation(() => {});
+  const errorMock = vi.spyOn(console, 'error').mockImplementation(() => {});
 
   try {
     expect(matcherRegex({ regex: '/foo/uubar', text: '/foo/uubar' })).toBeTruthy();
@@ -37,7 +37,7 @@ it('logs invalid slash-delimited regex and still matches via fallback', function
 });
 
 it('logs invalid plain regex and returns a safe non-matching regex', function () {
-  const errorMock = jest.spyOn(console, 'error').mockImplementation(() => {});
+  const errorMock = vi.spyOn(console, 'error').mockImplementation(() => {});
 
   try {
     expect(matcherRegex({ regex: '(', text: 'still safe' })).toBeFalsy();

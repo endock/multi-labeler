@@ -311,7 +311,7 @@ const files = {
 describe('basic', () => {
   beforeEach(() => {
     // Mock github context
-    jest.spyOn(github.context, 'repo', 'get').mockImplementation(() => {
+    vi.spyOn(github.context, 'repo', 'get').mockImplementation(() => {
       return {
         owner: 'owner-name',
         repo: 'repo-name',
@@ -320,7 +320,7 @@ describe('basic', () => {
   });
 
   afterAll(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('payload empty should be empty', async function () {
@@ -402,7 +402,7 @@ describe('basic', () => {
 describe('complex', () => {
   beforeEach(() => {
     // Mock github context
-    jest.spyOn(github.context, 'repo', 'get').mockImplementation(() => {
+    vi.spyOn(github.context, 'repo', 'get').mockImplementation(() => {
       return {
         owner: 'owner-name',
         repo: 'repo-name',
@@ -411,7 +411,7 @@ describe('complex', () => {
   });
 
   afterAll(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('1 should have complex labels', async function () {
@@ -519,7 +519,7 @@ describe('all matcher behavior', () => {
   };
 
   beforeEach(() => {
-    jest.spyOn(github.context, 'repo', 'get').mockImplementation(() => {
+    vi.spyOn(github.context, 'repo', 'get').mockImplementation(() => {
       return {
         owner: 'owner-name',
         repo: 'repo-name',
@@ -528,7 +528,7 @@ describe('all matcher behavior', () => {
   });
 
   afterAll(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('matches only when every file satisfies the glob', async function () {
@@ -610,7 +610,7 @@ describe('count matcher scoping', () => {
   };
 
   beforeEach(() => {
-    jest.spyOn(github.context, 'repo', 'get').mockImplementation(() => {
+    vi.spyOn(github.context, 'repo', 'get').mockImplementation(() => {
       return {
         owner: 'owner-name',
         repo: 'repo-name',
@@ -619,7 +619,7 @@ describe('count matcher scoping', () => {
   });
 
   afterAll(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('counts only files matching the any globs', async function () {
@@ -691,7 +691,7 @@ describe('zero count handling', () => {
   };
 
   beforeEach(() => {
-    jest.spyOn(github.context, 'repo', 'get').mockImplementation(() => {
+    vi.spyOn(github.context, 'repo', 'get').mockImplementation(() => {
       return {
         owner: 'owner-name',
         repo: 'repo-name',
@@ -700,7 +700,7 @@ describe('zero count handling', () => {
   });
 
   afterAll(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('applies labels when no files are present', async function () {

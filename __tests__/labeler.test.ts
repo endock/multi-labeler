@@ -52,12 +52,12 @@ async function runLabels(configPath: string): Promise<string[]> {
 
 describe('labeler', () => {
   beforeEach(() => {
-    jest.spyOn(core, 'warning').mockImplementation(jest.fn());
-    jest.spyOn(core, 'info').mockImplementation(jest.fn());
-    jest.spyOn(core, 'debug').mockImplementation(jest.fn());
-    jest.spyOn(core, 'setFailed').mockImplementation(jest.fn());
+    vi.spyOn(core, 'warning').mockImplementation(vi.fn());
+    vi.spyOn(core, 'info').mockImplementation(vi.fn());
+    vi.spyOn(core, 'debug').mockImplementation(vi.fn());
+    vi.spyOn(core, 'setFailed').mockImplementation(vi.fn());
 
-    jest.spyOn(github.context, 'repo', 'get').mockImplementation(() => {
+    vi.spyOn(github.context, 'repo', 'get').mockImplementation(() => {
       return {
         owner: 'owner-name',
         repo: 'repo-name',
@@ -74,7 +74,7 @@ describe('labeler', () => {
   });
 
   afterAll(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should be able to load self-test config', async function () {

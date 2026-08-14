@@ -61,7 +61,7 @@ const commits = {
 describe('commits', function () {
   beforeEach(() => {
     // Mock github context
-    jest.spyOn(github.context, 'repo', 'get').mockImplementation(() => {
+    vi.spyOn(github.context, 'repo', 'get').mockImplementation(() => {
       return {
         owner: 'owner-name',
         repo: 'repo-name',

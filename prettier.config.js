@@ -3,7 +3,7 @@ const config = {
   printWidth: 120,
   trailingComma: 'all',
   singleQuote: true,
-  plugins: [import('prettier-plugin-packagejson')],
+  plugins: ['prettier-plugin-packagejson'],
 };
 
-module.exports = config;
+export default config;

@@ -13,7 +13,7 @@ updates:
     labels:
       - '🤖 Dependencies'
     ignore:
-      # @actions/core 3 is ESM-only and ncc has no ESM output, so the bundle
-      # cannot be built at all. Lift this together with the move off ncc.
-      - dependency-name: '@actions/core'
+      # typescript-eslint peers on typescript <6.1.0, so TS 7 cannot install at all.
+      # Lift once typescript-eslint ships support.
+      - dependency-name: 'typescript'
         update-types: ['version-update:semver-major']

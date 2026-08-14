@@ -1,8 +1,7 @@
 import * as github from '@actions/github';
 import { GitHub } from '@actions/github/lib/utils';
 import type { Octokit as ProbotOctokit } from '@octokit/core';
-import { composeConfigGet } from '@probot/octokit-plugin-config';
-import type { Configuration } from '@probot/octokit-plugin-config/dist-types/types';
+import { composeConfigGet, type Configuration } from '@probot/octokit-plugin-config';
 import { all } from 'deepmerge';
 import { isRight } from 'fp-ts/Either';
 import * as t from 'io-ts';
