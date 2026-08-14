@@ -8,6 +8,7 @@ module.exports = {
   },
   moduleNameMapper: {
     '^@probot/octokit-plugin-config(/dist-src/index\\.js)?$': '<rootDir>/jest/mocks/probot-octokit-plugin-config.ts',
+    '^@actions/core$': '<rootDir>/jest/mocks/actions-core.ts',
   },
   extensionsToTreatAsEsm: ['.ts'],
   verbose: true,

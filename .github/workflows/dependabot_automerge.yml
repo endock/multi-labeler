@@ -12,6 +12,9 @@ jobs:
   automerge:
     uses: gofiber/.github/.github/workflows/dependabot-automerge.yml@main
     with:
-      match_pattern: 'Test|Build|[Ll]int'
+      # Package has to be in here: it is the check that dependabot-dist.yml
+      # turns green, and without waiting for it the merge can win the race
+      # against the rebuild and land a stale bundle on main.
+      match_pattern: 'Test|Build|[Ll]int|Package'
     secrets:
       github-token: ${{ secrets.PR_TOKEN }}

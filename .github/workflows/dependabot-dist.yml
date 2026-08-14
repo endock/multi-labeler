@@ -1,0 +1,64 @@
+name: Dependabot dist
+
+# dist/ is committed and ncc bundles every runtime dependency into it, but
+# dependabot only ever touches package.json and package-lock.json. Its PRs
+# therefore leave the bundle stale and the Package check red forever, which is
+# what left five of them open for up to nine months. Rebuilding the bundle on
+# the PR branch is what makes such a PR mergeable at all.
+#
+# pull_request_target, because a workflow triggered by a dependabot pull_request
+# only gets a read-only token and cannot push.
+
+on:
+  pull_request_target:
+    branches: [main]
+    paths:
+      - package.json
+      - package-lock.json
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  rebuild:
+    name: Rebuild dist
+    # The branch has to live in this repo: pull_request_target hands a write
+    # token to a job that checks out the PR's code.
+    if: >-
+      github.actor == 'dependabot[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          token: ${{ secrets.PR_TOKEN }}
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+
+      # No install scripts: this job holds a write token while installing the
+      # very dependency versions the PR proposes.
+      - run: npm ci --ignore-scripts
+      - run: npm run build
+      - run: npm run package
+
+      # Nothing from the event goes into the script itself: a dependency name
+      # travels into the PR title and branch name, and this job holds a token.
+      - name: Commit the rebuilt bundle
+        env:
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: |
+          git add dist
+          git diff --staged --quiet && exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore(ci): rebuild dist"
+          git push origin "HEAD:$BRANCH"
